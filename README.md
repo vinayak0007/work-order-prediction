@@ -1,116 +1,129 @@
 # Work Order Prediction System
 
+An end-to-end machine learning pipeline that predicts whether a device requires a **Work Order (WO)** based on its temperature time-series data.
+
+This project demonstrates structured ML development with modular feature engineering, reproducible training, and JSON-based inference supporting both single and bulk predictions.
+
+---
+
 ## 📌 Problem Statement
 
-The objective of this project is to build a machine learning system that predicts whether a device requires a **Work Order (WO)** based on its temperature time series data.
-
-Each device contains a time series of temperature readings. The task is to classify the device into:
+Given a device’s temperature time-series data, classify whether it requires:
 
 - `NO_WORK_ORDER`
 - `WO`
 
+Each device contains a sequence of temperature readings. The goal is to engineer meaningful features from this time-series data and build a reliable classification system.
+
 ---
 
-## 🧠 Approach Overview
+## 🧠 Solution Overview
 
-The solution is structured as a modular, production-style ML pipeline with:
+The system is structured as a production-style ML pipeline consisting of:
 
 - Exploratory Data Analysis (EDA)
-- Feature engineering
-- Model training pipeline
-- JSON-based inference pipeline (single & bulk support)
+- Centralized Feature Engineering
+- Reproducible Training Pipeline
+- JSON-Based Inference (Single & Bulk Support)
+- Clean Modular Project Architecture
 
 ---
 
 ## 📊 Exploratory Data Analysis (EDA)
 
-EDA was performed inside the `notebooks/` directory and includes:
+EDA was conducted in `notebooks/task_notebook.ipynb` and includes:
 
-- Dataset shape and schema inspection
-- Class distribution analysis (60–40 split)
-- Time series length distribution
-- Feature distribution by class
-- Volatility analysis
-- Leakage validation via shuffled-label test
+- Dataset inspection and schema validation
+- Class distribution analysis (≈ 60–40 split)
+- Time-series length distribution
+- Feature distribution comparison by class
+- Volatility pattern analysis
+- Shuffled-label sanity check to validate absence of leakage
 
-### 🔍 Key Finding
+### 🔍 Key Insight
 
-Devices labeled as `WO` exhibit significantly higher:
+Devices labeled `WO` exhibit significantly higher:
 
 - Standard deviation
 - Temperature range
-- Extreme max values
+- Extreme maximum values
 
-This creates strong separability between the two classes.
+This volatility-driven behavior creates strong separability between classes.
 
 ---
 
 ## ⚙️ Feature Engineering
 
-All feature engineering is centralized in:
+All feature logic is centralized in:
 
-
-src/features.py
-
+`src/features.py`
 
 Extracted features include:
 
-- Mean temperature
-- Standard deviation
-- Min / Max
-- Range
-- Skewness
-- Kurtosis
-- Number of points
-- Linear trend slope
-- Trend R² score
+- Mean temperature  
+- Standard deviation  
+- Minimum and Maximum  
+- Temperature range  
+- Skewness  
+- Kurtosis  
+- Number of points  
+- Linear trend slope  
+- Trend R² score  
 
-This ensures consistency between training and inference.
+Centralizing feature engineering ensures:
+
+- No training–inference drift  
+- Clean separation of concerns  
+- Reusability across pipelines  
 
 ---
 
 ## 🤖 Model
 
-Model used:
+Model Used: **Logistic Regression**
 
-- **Logistic Regression**
+Configuration:
+
 - `class_weight="balanced"`
-- Standard scaling via `Pipeline`
+- Standard scaling via `sklearn.Pipeline`
 
-Evaluation Metrics:
+### Evaluation Metrics
 
-- Precision
-- Recall
-- F1-score
-- ROC-AUC
+- Precision  
+- Recall  
+- F1-score  
+- ROC-AUC  
 
-Observed performance:
+### Observed Performance
 
-- ROC-AUC: 1.0
-- Perfect separation due to strong volatility features
+- ROC-AUC: **1.0**
+
+The high performance is driven by strong volatility-based class separation within the dataset.
 
 ---
 
 ## 🏗 Project Structure
 
-
+```
 work_order_project/
 │
+├── README.md
+├── requirements.txt
 ├── bulk_input.json
 ├── single_input.json
+│
 ├── data/
-│ └── training_data.pkl
-├── models/
-│ └── model.pkl
+│   └── training_data.pkl
+│
 ├── notebooks/
-│ └── eda_modeling.ipynb
-├── requirements.txt
+│   └── task_notebook.ipynb
+│
 └── src/
-├── config.py
-├── features.py
-├── train.py
-└── inference.py
-
+    ├── config.py
+    ├── features.py
+    ├── train.py
+    └── inference.py
+```
 
 ---
 
@@ -121,89 +134,125 @@ To train the model:
 ```bash
 cd src
 python train.py
+```
 
 This will:
 
-Load data
+- Load dataset  
+- Compute engineered features  
+- Perform train/test split  
+- Train the model  
+- Evaluate performance  
+- Save model to `models/model.pkl`  
 
-Extract features
+---
 
-Train model
+## 🔮 Inference Pipeline
 
-Evaluate performance
+The inference system accepts JSON input and supports:
 
-Save model to models/model.pkl
+- Single device prediction  
+- Bulk device prediction  
 
-🔮 Inference Pipeline
+---
 
-Inference accepts JSON input and supports both:
+### ▶ Single Prediction
 
-Single upload
+Example input (`single_input.json`):
 
-Bulk upload
-
-▶ Single Prediction
-
-Example JSON:
-
+```json
 {
   "series": [50, 51, 52, 49, 50]
 }
+```
 
 Run:
 
+```bash
 cd src
 python inference.py --json ../single_input.json
+```
 
-Output:
+Example Output:
 
+```json
 {
   "prediction": "NO_WORK_ORDER",
   "probability": 0.011
 }
-▶ Bulk Prediction
+```
 
-Example JSON:
+---
 
+### ▶ Bulk Prediction
+
+Example input (`bulk_input.json`):
+
+```json
 {
   "series_list": [
     [50, 51, 52],
     [110, 75, 80, 95, 60, 85, 120]
   ]
 }
+```
 
 Run:
 
+```bash
 cd src
 python inference.py --json ../bulk_input.json
+```
 
-Output:
+Example Output:
 
+```json
 [
   {"prediction": "NO_WORK_ORDER", "probability": 0.011},
   {"prediction": "WO", "probability": 1.0}
 ]
-📦 Installation
+```
+
+---
+
+## 📦 Installation
 
 Install dependencies:
 
+```bash
 pip install -r requirements.txt
-🛡 Design Decisions
+```
 
-Centralized feature logic to prevent training–inference drift
+---
 
-Used pipeline to avoid data leakage from scaling
+## 🛡 Design Decisions
 
-Performed shuffled-label sanity check
+- Centralized feature engineering to prevent training–inference inconsistency  
+- Used `Pipeline` to avoid data leakage from scaling  
+- Performed shuffled-label sanity check to validate robustness  
+- Modular separation between EDA and production code  
+- JSON-based inference to simulate deployment readiness  
 
-Modular structure separating EDA and production code
+---
 
-JSON-based inference for deployment readiness
+## ⚠️ Limitations
 
-⚠️ Limitations
+- Dataset is strongly separable due to volatility-driven features  
+- Perfect ROC-AUC suggests near-deterministic separation  
+- Model uses full-series aggregation (no temporal forecasting)
 
-Dataset is strongly separable due to volatility features
+---
 
-Perfect ROC-AUC suggests deterministic behavior
+## 🔮 Potential Improvements
 
-Does not currently implement temporal forecasting (uses full series)
+- Cross-validation for stronger robustness assessment  
+- Model comparison (Random Forest, Gradient Boosting)  
+- API wrapper using FastAPI  
+- Dockerization for deployment  
+- Monitoring and drift detection  
+
+---
+
+## 👨‍💻 Author
+
+Vinayak Pushkar  

@@ -17,7 +17,7 @@ Each device contains a sequence of temperature readings. The goal is to engineer
 
 ---
 
-## 🧠 Solution Overview
+## Solution Overview
 
 The system is structured as a production-style ML pipeline consisting of:
 
@@ -29,7 +29,7 @@ The system is structured as a production-style ML pipeline consisting of:
 
 ---
 
-## 📊 Exploratory Data Analysis (EDA)
+## Exploratory Data Analysis (EDA)
 
 EDA was conducted in `notebooks/task_notebook.ipynb` and includes:
 
@@ -40,7 +40,7 @@ EDA was conducted in `notebooks/task_notebook.ipynb` and includes:
 - Volatility pattern analysis
 - Shuffled-label sanity check to validate absence of leakage
 
-### 🔍 Key Insight
+### Key Insight
 
 Devices labeled `WO` exhibit significantly higher:
 
@@ -52,7 +52,7 @@ This volatility-driven behavior creates strong separability between classes.
 
 ---
 
-## ⚙️ Feature Engineering
+## Feature Engineering
 
 All feature logic is centralized in:
 
@@ -78,7 +78,7 @@ Centralizing feature engineering ensures:
 
 ---
 
-## 🤖 Model
+## Model
 
 Model Used: **Logistic Regression**
 
@@ -102,7 +102,7 @@ The high performance is driven by strong volatility-based class separation withi
 
 ---
 
-## 🏗 Project Structure
+## Project Structure
 
 ```
 work_order_project/
@@ -127,7 +127,7 @@ work_order_project/
 
 ---
 
-## 🚀 Training Pipeline
+## Training Pipeline
 
 To train the model:
 
@@ -147,7 +147,7 @@ This will:
 
 ---
 
-## 🔮 Inference Pipeline
+## Inference Pipeline
 
 The inference system accepts JSON input and supports:
 
@@ -215,7 +215,7 @@ Example Output:
 
 ---
 
-## 📦 Installation
+## Installation
 
 Install dependencies:
 
@@ -225,7 +225,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🛡 Design Decisions
+## Design Decisions
 
 - Centralized feature engineering to prevent training–inference inconsistency  
 - Used `Pipeline` to avoid data leakage from scaling  
@@ -235,7 +235,7 @@ pip install -r requirements.txt
 
 ---
 
-## ⚠️ Limitations
+## Limitations
 
 - Dataset is strongly separable due to volatility-driven features  
 - Perfect ROC-AUC suggests near-deterministic separation  
@@ -243,7 +243,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🔮 Potential Improvements
+## Potential Improvements
 
 - Cross-validation for stronger robustness assessment  
 - Model comparison (Random Forest, Gradient Boosting)  
@@ -253,6 +253,6 @@ pip install -r requirements.txt
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 Vinayak Pushkar  

@@ -1,5 +1,6 @@
-import pandas as pd
+import os
 import joblib
+import pandas as pd
 
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
@@ -12,15 +13,12 @@ from features import compute_features
 
 
 def main():
-
     # Load dataset
     df = pd.read_pickle(DATA_PATH)
 
-    # Feature extraction
+    # Feature engineering
     feature_df = df["timeseries_data"].apply(compute_features)
     feature_df = pd.DataFrame(feature_df.tolist())
-
-    # Map labels to numeric
     feature_df["label"] = df["label"].map(LABEL_MAPPING)
 
     X = feature_df.drop(columns=["label"])
@@ -32,27 +30,33 @@ def main():
         y,
         test_size=TEST_SIZE,
         stratify=y,
-        random_state=RANDOM_STATE
+        random_state=RANDOM_STATE,
     )
 
-    # Pipeline
-    pipeline = Pipeline([
-        ("scaler", StandardScaler()),
-        ("model", LogisticRegression(class_weight="balanced", max_iter=1000))
-    ])
+    # Define pipeline
+    pipeline = Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            ("model", LogisticRegression(class_weight="balanced", random_state=RANDOM_STATE)),
+        ]
+    )
 
+    # Train model
     pipeline.fit(X_train, y_train)
 
-    # Evaluation
-    preds = pipeline.predict(X_test)
-    probs = pipeline.predict_proba(X_test)[:, 1]
+    # Evaluate
+    y_pred = pipeline.predict(X_test)
+    y_proba = pipeline.predict_proba(X_test)[:, 1]
 
     print("\nClassification Report:\n")
-    print(classification_report(y_test, preds))
+    print(classification_report(y_test, y_pred))
 
-    print("ROC-AUC:", roc_auc_score(y_test, probs))
+    roc_auc = roc_auc_score(y_test, y_proba)
+    print("ROC-AUC:", roc_auc)
 
-    # Save model
+    # Ensure models directory exists before saving
+    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+
     joblib.dump(pipeline, MODEL_PATH)
     print(f"\nModel saved to {MODEL_PATH}")
 
